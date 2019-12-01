@@ -26,13 +26,22 @@ class Unscented:
 		self.Xk_k_menos1 = None # Xk|k-1 y Xk-1|k-1 para el proceso anterior
 		self.Xk_k_menos1_predicha = None  # X^ k|k-1
 		self.Pk_k_menos1 = None  # Pk|k-1
+		self.Ws = None
+		self.Wc = None
 
-	def fx(self, Xk_i_menos1):
+	def fx(self, Xi):
 		"""
-		Aquí se define la función de transición de estados NO LINEAL.
+		Aquí se define la función de transición de estados NO LINEAL
+		para cada punto sigma
 		"""
-		return 1
+		return Xi + math.sin(math.pow(Xi, 2))
 
+	def hx(self, Xi):
+		"""
+		Función NO LINEAL de observación
+		"""
+		return math.sin(Xi) + Xi
+	
 	def puntos_sigma(self, Xk, Px_k):
 		"""
 		Calcular los puntos sigma dada una matriz X y una matriz de covarianza.
@@ -41,10 +50,14 @@ class Unscented:
 		Xk (list): Estado en el tiempo t
 		Px_k (list): Vector de covarianzas
 
-		Regresa:
-		Vector con los puntos sigmas
+		Actualiza:
+		Variable `self.Xk_k_menos1`
 		"""
-		matriz_sigmas = copy.deepcopy(Xk)
+		if self.Xk_k_menos1 is None:
+			matriz_sigmas = copy.deepcopy(Xk)
+		else
+			# matriz_sigmas = copy.deepcopy(self.Xk_k_menos1) # X k-1|k-1
+			matriz_sigmas = [] # X k-1|k-1
 		for index, x in enumerate(Xk[0]):
 			_sigma = Px_k[index][index]
 			punto_sigma = x + math.sqrt(_sigma)
@@ -80,7 +93,7 @@ class Unscented:
 				except Exception as e:
 					print(e)
 					pass
-		return matriz_sigmas
+		self.Xk_k_menos1 = matriz_sigmas
 
 	def asignar_pesos(self):
 		pesos_estimacion_estado = []  # W[s]
@@ -97,7 +110,71 @@ class Unscented:
 		Etapa de predicción
 		"""
 		# Pasar cada punto sigma a través de la f(x)
+		xk_k_menos1 = []
+		for i, xk_menos1 in enumerate(self.Xk_k_menos1):
+			# self.Xk_k_menos1[i] = self.fx(xk_menos1)
+			xk_k_menos1.append(self.fx(xk_menos1))
+
+		x_k_k_menos1_predicha = []
+
+		ws, wc = self.asignar_pesos()
+		self.Ws = ws
+		self.Wc = wc
+		for i in range(2*self.L):
+			x_k_k_menos1_predicha.append(
+				ws[i]*xk_k_menos1[i]
+			)
+
+		pk_k_menos1 = 0
+		Qk = np.array(
+			[
+				[ np.random.normal(0, 0.02**2) ],
+				[ np.random.normal(0, 0.02**2) ]
+			]
+		)
+		for i in range(2*self.L):
+			parte1 = wc[i]*(xk_k_menos1[i]-x_k_k_menos1_predicha)
+			parte2 = parte1 * np.transpose(
+				xk_k_menos1[i]-x_k_k_menos1_predicha
+			) + Qk
+			pk_k_menos1 += parte2
+
+		self.Xk_k_menos1_predicha = copy.deepcopy(xk_k_menos1)
+		self.Pk_k_menos1 = copy.deepcopy(pk_k_menos1)
 	
+	def actualizacion(self):
+		Yk = []
+		for i in range(2*self.L):
+			Yk.append(
+				self.hx(
+					self.Xk_k_menos1[i]
+				)
+			)
+		Zk = 0
+		for i in range(2*self.L):
+			Zk +=self.Ws[i]*Yk[i]
+
+		Pzk_zk = 0
+		Rk = np.array(
+			[
+				[ np.random.normal(0, 0.02**2) ],
+				[ np.random.normal(0, 0.02**2) ]
+			]
+		)
+		for i in range(2*self.L):
+			parte1 = self.Wc[i] * (Yk[i]-Zk)
+			parte2 = parte1 @ np.transpose(
+				Yk[i]-Zk
+			) + Rk
+			Pzk_zk += parte2
+
+		Pxk_zk = 0
+		for i in range(2*self.L):
+			parte1 = self.Wc[i] * ( self.Xk_k_menos1[i] - self.Xk_k_menos1_predicha )
+			parte2 = parte1 @ np.transpose(
+				Yk[i] - Zk
+			)
+
 	def obtener_puntos_sigma(self, X0, Px):
 		"""
 		Calcular los puntos sigma dada una matriz X y una matriz de covarianza.
