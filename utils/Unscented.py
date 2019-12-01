@@ -1,3 +1,4 @@
+from numpy.linalg import inv  # Inversa
 import numpy as np
 import math
 import copy
@@ -125,7 +126,7 @@ class Unscented:
 				ws[i]*xk_k_menos1[i]
 			)
 
-		pk_k_menos1 = 0
+		pk_k_menos1 = []
 		Qk = np.array(
 			[
 				[ np.random.normal(0, 0.02**2) ],
@@ -137,7 +138,7 @@ class Unscented:
 			parte2 = parte1 * np.transpose(
 				xk_k_menos1[i]-x_k_k_menos1_predicha
 			) + Qk
-			pk_k_menos1 += parte2
+			pk_k_menos1.append(parte2)
 
 		self.Xk_k_menos1_predicha = copy.deepcopy(xk_k_menos1)
 		self.Pk_k_menos1 = copy.deepcopy(pk_k_menos1)
@@ -154,7 +155,7 @@ class Unscented:
 		for i in range(2*self.L):
 			Zk +=self.Ws[i]*Yk[i]
 
-		Pzk_zk = 0
+		Pzk_zk = []
 		Rk = np.array(
 			[
 				[ np.random.normal(0, 0.02**2) ],
@@ -166,14 +167,20 @@ class Unscented:
 			parte2 = parte1 @ np.transpose(
 				Yk[i]-Zk
 			) + Rk
-			Pzk_zk += parte2
+			Pzk_zk.append(parte2)
 
-		Pxk_zk = 0
+		Pxk_zk = []
 		for i in range(2*self.L):
 			parte1 = self.Wc[i] * ( self.Xk_k_menos1[i] - self.Xk_k_menos1_predicha )
 			parte2 = parte1 @ np.transpose(
 				Yk[i] - Zk
 			)
+			Pxk_zk.append(parte2)
+
+			Kk = Pxk_zk @ inv(Pzk_zk)
+
+			Pk_k = self.Pk_k_menos1 - ( np.dot( Kk, np.dot( Pzk_zk, np.transpose(Kk) )) )
+			self.Pk_k_menos1 = copy.deepcopy(Pk_k)
 
 	def obtener_puntos_sigma(self, X0, Px):
 		"""
