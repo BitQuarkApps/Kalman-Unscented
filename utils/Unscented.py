@@ -58,7 +58,6 @@ class Unscented:
 			matriz_sigmas = copy.deepcopy(Xk)
 		else:
 			# matriz_sigmas = copy.deepcopy(self.Xk_k_menos1) # X k-1|k-1
-			print('vacio')
 			matriz_sigmas = np.array([]) # X k-1|k-1
 		for index, x in enumerate(Xk):
 			_sigma = Px_k[index][index]
@@ -112,7 +111,6 @@ class Unscented:
 		# Pasar cada punto sigma a través de la f(x)
 		xk_k_menos1 = np.array([])
 		for i, xk_menos1 in enumerate(self.Xk_k_menos1):
-			print(xk_menos1)
 			self.Xk_k_menos1[i] = self.fx(xk_menos1)
 			# xk_k_menos1.append(self.fx(xk_menos1))
 			xk_k_menos1 = np.append(xk_k_menos1, self.fx(xk_menos1))
@@ -130,8 +128,8 @@ class Unscented:
 		pk_k_menos1 = []
 		Qk = np.array(
 			[
-				[ np.random.normal(0, 0.02**2) ],
-				[ np.random.normal(0, 0.02**2) ]
+				[ np.random.normal(0, 0.2**2) ],
+				[ np.random.normal(0, 0.2**2) ]
 			]
 		)
 		for i in range(self.L):
@@ -142,20 +140,25 @@ class Unscented:
 			pk_k_menos1.append(parte2)
 		self.Xk_k_menos1_predicha = copy.deepcopy(xk_k_menos1)
 		self.Pk_k_menos1 = copy.deepcopy(pk_k_menos1)
+		return self.Xk_k_menos1, self.Xk_k_menos1_predicha
+
 	
 	def actualizacion(self):
-		Yk = []
+		# Yk = []
+		Yk = np.array([])
 		for i in range(self.L):
-			Yk.append(
-				self.hx(
-					self.Xk_k_menos1[i]
-				)
-			)
+			# Yk.append(
+			# 	self.hx(
+			# 		self.Xk_k_menos1[i]
+			# 	)
+			# )
+			Yk = np.append(Yk, self.hx(self.Xk_k_menos1[i]))
 		Zk = 0
 		for i in range(self.L):
 			Zk +=self.Ws[i]*Yk[i]
 
-		Pzk_zk = []
+		# Pzk_zk = []
+		Pzk_zk = np.array([])
 		Rk = np.array(
 			[
 				[ np.random.normal(0, 0.02**2) ],
@@ -168,25 +171,23 @@ class Unscented:
 			# parte2 = parte1 @ np.transpose(
 			# 	Yk[i]-Zk
 			# ) + Rk
-			Pzk_zk.append(parte2)
+			# Pzk_zk.append(parte2)
+			Pzk_zk = np.append(Pzk_zk, parte2)
 
-		Pxk_zk = []
+		# Pxk_zk = []
+		Pxk_zk = np.array([])
 		for i in range(self.L):
 			parte1 = self.Wc[i] * ( self.Xk_k_menos1[i] - self.Xk_k_menos1_predicha )
 			parte2 = np.dot(parte1, np.transpose( Yk[i]-Zk ) )
 			# parte2 = parte1 @ np.transpose(
 			# 	Yk[i] - Zk
 			# )
-			Pxk_zk.append(parte2)
-		print('------')
-		print(inv(Pzk_zk[0]))
-		print('------')
-		Kk = np.dot(Pxk_zk, inv(Pzk_zk))
-
+			# Pxk_zk.append(parte2)
+			Pxk_zk = np.append(Pxk_zk, parte2)
+		# Kk = np.dot(Pxk_zk, inv(Pzk_zk))
+		Kk = np.dot(Pxk_zk, Pzk_zk)
 		Pk_k = self.Pk_k_menos1 - ( np.dot( Kk, np.dot( Pzk_zk, np.transpose(Kk) )) )
 		self.Pk_k_menos1 = copy.deepcopy(Pk_k)
-		print('=== Actualizacion ===')
-		print(Pk_k)
 	def obtener_puntos_sigma(self, X0, Px):
 		"""
 		Calcular los puntos sigma dada una matriz X y una matriz de covarianza.
