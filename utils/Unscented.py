@@ -4,19 +4,19 @@ import math
 import copy
 
 class Unscented:
-	def __init__(self, variables_estado, alfa=10e-3, k=0, beta=2):
-		"""
-		Clase que contiene los métodos que la extensión Unscented del
-		filtro de Kalman requiere.
+	"""
+	Clase que contiene los métodos que la extensión Unscented del
+	filtro de Kalman requiere.
 
-		Parámetros:
-		variables_estado (int): Número de variables que definen el estado del sistema,
-		es decir, la longitud del vector X.
-		alfa (float): Dispersión de los puntos sigma, [default] 10e-3
-		k (float): (Kappa) es el segundo parámetro de escala, [default] 0
-		beta (fliat): Parámetro para incorporar el conocimiento previo
-		de la distribución de X. [default] 2
-		"""
+	Parámetros:
+	variables_estado (int): Número de variables que definen el estado del sistema,
+	es decir, la longitud del vector X.
+	alfa (float): Dispersión de los puntos sigma, [default] 10e-3
+	k (float): (Kappa) es el segundo parámetro de escala, [default] 0
+	beta (fliat): Parámetro para incorporar el conocimiento previo
+	de la distribución de X. [default] 2
+	"""
+	def __init__(self, variables_estado, alfa=10e-3, k=0, beta=2):
 		print("=== Filtro de Kalman Unscented ===")
 		self.L = variables_estado
 		self.alfa = alfa
@@ -56,50 +56,49 @@ class Unscented:
 		"""
 		if self.Xk_k_menos1 is None:
 			matriz_sigmas = copy.deepcopy(Xk)
-		else
+		else:
 			# matriz_sigmas = copy.deepcopy(self.Xk_k_menos1) # X k-1|k-1
-			matriz_sigmas = [] # X k-1|k-1
-		for index, x in enumerate(Xk[0]):
+			print('vacio')
+			matriz_sigmas = np.array([]) # X k-1|k-1
+		for index, x in enumerate(Xk):
 			_sigma = Px_k[index][index]
 			punto_sigma = x + math.sqrt(_sigma)
 			if(index%2 == 0):
 				# X
 				try:
-					matriz_sigmas.append([punto_sigma, Xk[0][index+1]])
+					# matriz_sigmas = matriz_sigmas.append([punto_sigma, Xk[index+1]])
+					matriz_sigmas = np.append(matriz_sigmas, [punto_sigma, Xk[index+1]])
 				except Exception as e:
-					print(e)
 					pass
 			else:
 				# Y
 				try:
-					matriz_sigmas.append([Xk[0][index-1], punto_sigma])
+					# matriz_sigmas.append([Xk[index-1], punto_sigma])
+					matriz_sigmas = np.append(matriz_sigmas, [Xk[index+1],punto_sigma])
 				except Exception as e:
-					print(e)
 					pass
 
-		for index, x in enumerate(Xk[0]):
+		for index, x in enumerate(Xk):
 			_sigma = Px_k[index][index]
 			punto_sigma = x - math.sqrt(_sigma)
 			if(index%2 == 0):
 				# X
 				try:
-					matriz_sigmas.append([punto_sigma, Xk[0][index+1]])
+					matriz_sigmas = np.append(matriz_sigmas, [punto_sigma, Xk[index+1]])
 				except Exception as e:
-					print(e)
 					pass
 			else:
 				# Y
 				try:
-					matriz_sigmas.append([Xk[0][index-1], punto_sigma])
+					matriz_sigmas = np.append(matriz_sigmas, [Xk[index-1], punto_sigma])
 				except Exception as e:
-					print(e)
 					pass
-		self.Xk_k_menos1 = matriz_sigmas
+		self.Xk_k_menos1 = copy.deepcopy(matriz_sigmas)
 
 	def asignar_pesos(self):
 		pesos_estimacion_estado = []  # W[s]
 		pesos_matriz_covarianza = []  # W[c]
-		for i in range(2*self.L):
+		for i in range(self.L):
 			ws = self._lambda/(self.L + self._lambda)
 			wc = (self._lambda/(self.L + self._lambda)) + (1-math.pow(self.alfa,2)-self.beta)
 			pesos_estimacion_estado.append(ws)
@@ -111,17 +110,19 @@ class Unscented:
 		Etapa de predicción
 		"""
 		# Pasar cada punto sigma a través de la f(x)
-		xk_k_menos1 = []
+		xk_k_menos1 = np.array([])
 		for i, xk_menos1 in enumerate(self.Xk_k_menos1):
-			# self.Xk_k_menos1[i] = self.fx(xk_menos1)
-			xk_k_menos1.append(self.fx(xk_menos1))
+			print(xk_menos1)
+			self.Xk_k_menos1[i] = self.fx(xk_menos1)
+			# xk_k_menos1.append(self.fx(xk_menos1))
+			xk_k_menos1 = np.append(xk_k_menos1, self.fx(xk_menos1))
 
 		x_k_k_menos1_predicha = []
 
 		ws, wc = self.asignar_pesos()
 		self.Ws = ws
 		self.Wc = wc
-		for i in range(2*self.L):
+		for i in range(self.L):
 			x_k_k_menos1_predicha.append(
 				ws[i]*xk_k_menos1[i]
 			)
@@ -133,26 +134,25 @@ class Unscented:
 				[ np.random.normal(0, 0.02**2) ]
 			]
 		)
-		for i in range(2*self.L):
+		for i in range(self.L):
 			parte1 = wc[i]*(xk_k_menos1[i]-x_k_k_menos1_predicha)
 			parte2 = parte1 * np.transpose(
 				xk_k_menos1[i]-x_k_k_menos1_predicha
 			) + Qk
 			pk_k_menos1.append(parte2)
-
 		self.Xk_k_menos1_predicha = copy.deepcopy(xk_k_menos1)
 		self.Pk_k_menos1 = copy.deepcopy(pk_k_menos1)
 	
 	def actualizacion(self):
 		Yk = []
-		for i in range(2*self.L):
+		for i in range(self.L):
 			Yk.append(
 				self.hx(
 					self.Xk_k_menos1[i]
 				)
 			)
 		Zk = 0
-		for i in range(2*self.L):
+		for i in range(self.L):
 			Zk +=self.Ws[i]*Yk[i]
 
 		Pzk_zk = []
@@ -162,26 +162,31 @@ class Unscented:
 				[ np.random.normal(0, 0.02**2) ]
 			]
 		)
-		for i in range(2*self.L):
+		for i in range(self.L):
 			parte1 = self.Wc[i] * (Yk[i]-Zk)
-			parte2 = parte1 @ np.transpose(
-				Yk[i]-Zk
-			) + Rk
+			parte2 = np.dot(parte1, np.transpose( Yk[i]-Zk ) ) + Rk
+			# parte2 = parte1 @ np.transpose(
+			# 	Yk[i]-Zk
+			# ) + Rk
 			Pzk_zk.append(parte2)
 
 		Pxk_zk = []
-		for i in range(2*self.L):
+		for i in range(self.L):
 			parte1 = self.Wc[i] * ( self.Xk_k_menos1[i] - self.Xk_k_menos1_predicha )
-			parte2 = parte1 @ np.transpose(
-				Yk[i] - Zk
-			)
+			parte2 = np.dot(parte1, np.transpose( Yk[i]-Zk ) )
+			# parte2 = parte1 @ np.transpose(
+			# 	Yk[i] - Zk
+			# )
 			Pxk_zk.append(parte2)
+		print('------')
+		print(inv(Pzk_zk[0]))
+		print('------')
+		Kk = np.dot(Pxk_zk, inv(Pzk_zk))
 
-			Kk = Pxk_zk @ inv(Pzk_zk)
-
-			Pk_k = self.Pk_k_menos1 - ( np.dot( Kk, np.dot( Pzk_zk, np.transpose(Kk) )) )
-			self.Pk_k_menos1 = copy.deepcopy(Pk_k)
-
+		Pk_k = self.Pk_k_menos1 - ( np.dot( Kk, np.dot( Pzk_zk, np.transpose(Kk) )) )
+		self.Pk_k_menos1 = copy.deepcopy(Pk_k)
+		print('=== Actualizacion ===')
+		print(Pk_k)
 	def obtener_puntos_sigma(self, X0, Px):
 		"""
 		Calcular los puntos sigma dada una matriz X y una matriz de covarianza.
