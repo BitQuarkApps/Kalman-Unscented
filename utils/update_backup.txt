@@ -1,0 +1,44 @@
+# Yk = []
+		# Yk = np.array([])
+		# for i in range(self.L):
+		# 	# Yk.append(
+		# 	# 	self.hx(
+		# 	# 		self.Xk_k_menos1[i]
+		# 	# 	)
+		# 	# )
+		# 	Yk = np.append(Yk, self.hx(self.Xk_k_menos1[i]))
+		# Zk = 0
+		# for i in range(self.L):
+		# 	Zk +=self.Ws[i]*Yk[i]
+
+		# # Pzk_zk = []
+		# Pzk_zk = np.array([])
+		# Rk = np.array(
+		# 	[
+		# 		[ np.random.normal(0, 0.02**2) ],
+		# 		[ np.random.normal(0, 0.02**2) ]
+		# 	]
+		# )
+		# for i in range(self.L):
+		# 	parte1 = self.Wc[i] * (Yk[i]-Zk)
+		# 	parte2 = np.dot(parte1, np.transpose( Yk[i]-Zk ) ) + Rk
+		# 	# parte2 = parte1 @ np.transpose(
+		# 	# 	Yk[i]-Zk
+		# 	# ) + Rk
+		# 	# Pzk_zk.append(parte2)
+		# 	Pzk_zk = np.append(Pzk_zk, parte2)
+
+		# # Pxk_zk = []
+		# Pxk_zk = np.array([])
+		# for i in range(self.L):
+		# 	parte1 = self.Wc[i] * ( self.Xk_k_menos1[i] - self.Xk_k_menos1_predicha )
+		# 	parte2 = np.dot(parte1, np.transpose( Yk[i]-Zk ) )
+		# 	# parte2 = parte1 @ np.transpose(
+		# 	# 	Yk[i] - Zk
+		# 	# )
+		# 	# Pxk_zk.append(parte2)
+		# 	Pxk_zk = np.append(Pxk_zk, parte2)
+		# # Kk = np.dot(Pxk_zk, inv(Pzk_zk))
+		# Kk = np.dot(Pxk_zk, Pzk_zk)
+		# Pk_k = self.Pk_k_menos1 - ( np.dot( Kk, np.dot( Pzk_zk, np.transpose(Kk) )) )
+		# self.Pk_k_menos1 = copy.deepcopy(Pk_k)

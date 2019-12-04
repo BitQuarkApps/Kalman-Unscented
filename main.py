@@ -30,8 +30,7 @@ if __name__ == '__main__':
 		X0 = i + np.power(X0, 2)
 		kf.puntos_sigma(X0, Px)
 		filtrada, predicha = kf.prediccion()
-		print(predicha)
-		# kf.actualizacion()
+		kf.actualizacion()
 
 		REAL_X.append(X0[0])
 		REAL_Y.append(X0[1])

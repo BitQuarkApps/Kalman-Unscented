@@ -118,8 +118,8 @@ class Unscented:
 		x_k_k_menos1_predicha = []
 
 		ws, wc = self.asignar_pesos()
-		self.Ws = ws
-		self.Wc = wc
+		self.Ws = np.array([ws])
+		self.Wc = np.array([wc])
 		for i in range(self.L):
 			x_k_k_menos1_predicha.append(
 				ws[i]*xk_k_menos1[i]
@@ -141,53 +141,46 @@ class Unscented:
 		self.Xk_k_menos1_predicha = copy.deepcopy(xk_k_menos1)
 		self.Pk_k_menos1 = copy.deepcopy(pk_k_menos1)
 		return self.Xk_k_menos1, self.Xk_k_menos1_predicha
-
 	
 	def actualizacion(self):
-		# Yk = []
-		Yk = np.array([])
-		for i in range(self.L):
-			# Yk.append(
-			# 	self.hx(
-			# 		self.Xk_k_menos1[i]
-			# 	)
-			# )
-			Yk = np.append(Yk, self.hx(self.Xk_k_menos1[i]))
+		"""
+		Proceso de actualización
+		"""
+		Yk = [] # Un arreglo de 1D, pasará a ser 2D con numpy
+		for xk_k_menos1 in self.Xk_k_menos1:
+			Yk.append(xk_k_menos1)
+		Yk = np.array([Yk])  # El arreglo 1D se transforma a 2D
 		Zk = 0
-		for i in range(self.L):
-			Zk +=self.Ws[i]*Yk[i]
-
-		# Pzk_zk = []
-		Pzk_zk = np.array([])
+		for i in range(len(self.Ws)):
+			Zk += self.Ws[i]*Yk[0][i]
+		
 		Rk = np.array(
 			[
 				[ np.random.normal(0, 0.02**2) ],
 				[ np.random.normal(0, 0.02**2) ]
 			]
 		)
-		for i in range(self.L):
-			parte1 = self.Wc[i] * (Yk[i]-Zk)
-			parte2 = np.dot(parte1, np.transpose( Yk[i]-Zk ) ) + Rk
-			# parte2 = parte1 @ np.transpose(
-			# 	Yk[i]-Zk
-			# ) + Rk
-			# Pzk_zk.append(parte2)
-			Pzk_zk = np.append(Pzk_zk, parte2)
 
-		# Pxk_zk = []
-		Pxk_zk = np.array([])
-		for i in range(self.L):
-			parte1 = self.Wc[i] * ( self.Xk_k_menos1[i] - self.Xk_k_menos1_predicha )
-			parte2 = np.dot(parte1, np.transpose( Yk[i]-Zk ) )
-			# parte2 = parte1 @ np.transpose(
-			# 	Yk[i] - Zk
-			# )
-			# Pxk_zk.append(parte2)
-			Pxk_zk = np.append(Pxk_zk, parte2)
-		# Kk = np.dot(Pxk_zk, inv(Pzk_zk))
-		Kk = np.dot(Pxk_zk, Pzk_zk)
-		Pk_k = self.Pk_k_menos1 - ( np.dot( Kk, np.dot( Pzk_zk, np.transpose(Kk) )) )
-		self.Pk_k_menos1 = copy.deepcopy(Pk_k)
+		Pzk_zk = []
+		Pzk_zk_sumatoria = 0
+		for i in range(len(self.Wc[0])):
+			Yk_menos_Zk = Yk[0][i]-Zk
+			Yk_menos_Zk_transpuesta = np.transpose(Yk[0][i]-Zk)
+			Pzk_zk_sumatoria += ( self.Wc[0][i] * Yk_menos_Zk * Yk_menos_Zk_transpuesta)
+		Pzk_zk = Pzk_zk_sumatoria + Rk
+
+		Pxk_zk = []
+		Pxk_zk_sumatoria = 0
+		for i in range(len(self.Wc[0])):
+			resta1 = self.Xk_k_menos1[i] - self.Xk_k_menos1_predicha
+			resta2 = np.transpose(Yk[0][i] - Zk)
+			mult1 = self.Wc[0][i] * resta1
+			mult2 = mult1*resta2
+			Pxk_zk_sumatoria += mult2 
+		# Pxk_zk = Pxk_zk_sumatoria
+		# inversa = inv(Pzk_zk)
+		# print(inversa)
+
 	def obtener_puntos_sigma(self, X0, Px):
 		"""
 		Calcular los puntos sigma dada una matriz X y una matriz de covarianza.
