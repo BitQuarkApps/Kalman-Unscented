@@ -1,263 +1,101 @@
-from numpy.linalg import inv  # Inversa
+from scipy import linalg as scipy_alg
 import numpy as np
-import math
-import copy
 
-class Unscented:
-	"""
-	Clase que contiene los métodos que la extensión Unscented del
-	filtro de Kalman requiere.
 
-	Parámetros:
-	variables_estado (int): Número de variables que definen el estado del sistema,
-	es decir, la longitud del vector X.
-	alfa (float): Dispersión de los puntos sigma, [default] 10e-3
-	k (float): (Kappa) es el segundo parámetro de escala, [default] 0
-	beta (fliat): Parámetro para incorporar el conocimiento previo
-	de la distribución de X. [default] 2
-	"""
-	def __init__(self, variables_estado, alfa=10e-3, k=0, beta=2):
-		print("=== Filtro de Kalman Unscented ===")
-		self.L = variables_estado
-		self.alfa = alfa
-		self.k = k
-		self._lambda = math.pow(alfa, 2) * (self.L + self.k) - self.L
-		self.beta = beta
-		
-		self.Xk_k_menos1 = None # Xk|k-1 y Xk-1|k-1 para el proceso anterior
-		self.Xk_k_menos1_predicha = None  # X^ k|k-1
-		self.Pk_k_menos1 = None  # Pk|k-1
-		self.Ws = None
-		self.Wc = None
-
-	def fx(self, Xi):
-		"""
-		Aquí se define la función de transición de estados NO LINEAL
-		para cada punto sigma
-		"""
-		return Xi + math.sin(math.pow(Xi, 2))
-
-	def hx(self, Xi):
-		"""
-		Función NO LINEAL de observación
-		"""
-		return math.sin(Xi) + Xi
+class KalmanUnscented:
+	def __init__(self):
+		self.Xs = None # 2L+1 puntos sigma para fx
+		self.Zs = None # 2L+1 puntos sigma para hx
+		self.alfa = 10e-3
+		self.beta = 2
+		self.kappa = 0
 	
-	def puntos_sigma(self, Xk, Px_k):
+	# Inicializadores de variables
+	def set_x(self, vector_x):
 		"""
-		Calcular los puntos sigma dada una matriz X y una matriz de covarianza.
-		k => Instante de tiempo
-		Parámetros:
-		Xk (list): Estado en el tiempo t
-		Px_k (list): Vector de covarianzas
-
-		Actualiza:
-		Variable `self.Xk_k_menos1`
-		"""
-		if self.Xk_k_menos1 is None:
-			matriz_sigmas = copy.deepcopy(Xk)
-		else:
-			# matriz_sigmas = copy.deepcopy(self.Xk_k_menos1) # X k-1|k-1
-			matriz_sigmas = np.array([]) # X k-1|k-1
-		for index, x in enumerate(Xk):
-			_sigma = Px_k[index][index]
-			punto_sigma = x + math.sqrt(_sigma)
-			if(index%2 == 0):
-				# X
-				try:
-					# matriz_sigmas = matriz_sigmas.append([punto_sigma, Xk[index+1]])
-					matriz_sigmas = np.append(matriz_sigmas, [punto_sigma, Xk[index+1]])
-				except Exception as e:
-					pass
-			else:
-				# Y
-				try:
-					# matriz_sigmas.append([Xk[index-1], punto_sigma])
-					matriz_sigmas = np.append(matriz_sigmas, [Xk[index+1],punto_sigma])
-				except Exception as e:
-					pass
-
-		for index, x in enumerate(Xk):
-			_sigma = Px_k[index][index]
-			punto_sigma = x - math.sqrt(_sigma)
-			if(index%2 == 0):
-				# X
-				try:
-					matriz_sigmas = np.append(matriz_sigmas, [punto_sigma, Xk[index+1]])
-				except Exception as e:
-					pass
-			else:
-				# Y
-				try:
-					matriz_sigmas = np.append(matriz_sigmas, [Xk[index-1], punto_sigma])
-				except Exception as e:
-					pass
-		self.Xk_k_menos1 = copy.deepcopy(matriz_sigmas)
-
-	def asignar_pesos(self):
-		pesos_estimacion_estado = []  # W[s]
-		pesos_matriz_covarianza = []  # W[c]
-		for i in range(self.L):
-			ws = self._lambda/(self.L + self._lambda)
-			wc = (self._lambda/(self.L + self._lambda)) + (1-math.pow(self.alfa,2)-self.beta)
-			pesos_estimacion_estado.append(ws)
-			pesos_matriz_covarianza.append(wc)
-		return pesos_estimacion_estado, pesos_matriz_covarianza
-	
-	def prediccion(self):
-		"""
-		Etapa de predicción
-		"""
-		# Pasar cada punto sigma a través de la f(x)
-		xk_k_menos1 = np.array([])
-		for i, xk_menos1 in enumerate(self.Xk_k_menos1):
-			self.Xk_k_menos1[i] = self.fx(xk_menos1)
-			# xk_k_menos1.append(self.fx(xk_menos1))
-			xk_k_menos1 = np.append(xk_k_menos1, self.fx(xk_menos1))
-
-		x_k_k_menos1_predicha = []
-
-		ws, wc = self.asignar_pesos()
-		self.Ws = np.array([ws])
-		self.Wc = np.array([wc])
-		for i in range(self.L):
-			x_k_k_menos1_predicha.append(
-				ws[i]*xk_k_menos1[i]
-			)
-
-		pk_k_menos1 = []
-		Qk = np.array(
-			[
-				[ np.random.normal(0, 0.2**2) ],
-				[ np.random.normal(0, 0.2**2) ]
-			]
-		)
-		for i in range(self.L):
-			parte1 = wc[i]*(xk_k_menos1[i]-x_k_k_menos1_predicha)
-			parte2 = parte1 * np.transpose(
-				xk_k_menos1[i]-x_k_k_menos1_predicha
-			) + Qk
-			pk_k_menos1.append(parte2)
-		self.Xk_k_menos1_predicha = copy.deepcopy(xk_k_menos1)
-		self.Pk_k_menos1 = copy.deepcopy(pk_k_menos1)
-		return self.Xk_k_menos1, self.Xk_k_menos1_predicha
-	
-	def actualizacion(self):
-		"""
-		Proceso de actualización
-		"""
-		Yk = [] # Un arreglo de 1D, pasará a ser 2D con numpy
-		for xk_k_menos1 in self.Xk_k_menos1:
-			Yk.append(xk_k_menos1)
-		Yk = np.array([Yk])  # El arreglo 1D se transforma a 2D
-		Zk = 0
-		for i in range(len(self.Ws)):
-			Zk += self.Ws[i]*Yk[0][i]
-		
-		Rk = np.array(
-			[
-				[ np.random.normal(0, 0.02**2) ],
-				[ np.random.normal(0, 0.02**2) ]
-			]
-		)
-
-		Pzk_zk = []
-		Pzk_zk_sumatoria = 0
-		for i in range(len(self.Wc[0])):
-			Yk_menos_Zk = Yk[0][i]-Zk
-			Yk_menos_Zk_transpuesta = np.transpose(Yk[0][i]-Zk)
-			Pzk_zk_sumatoria += ( self.Wc[0][i] * Yk_menos_Zk * Yk_menos_Zk_transpuesta)
-		Pzk_zk = Pzk_zk_sumatoria + Rk
-
-		Pxk_zk = []
-		Pxk_zk_sumatoria = 0
-		for i in range(len(self.Wc[0])):
-			resta1 = self.Xk_k_menos1[i] - self.Xk_k_menos1_predicha
-			resta2 = np.transpose(Yk[0][i] - Zk)
-			mult1 = self.Wc[0][i] * resta1
-			mult2 = mult1*resta2
-			Pxk_zk_sumatoria += mult2 
-		# Pxk_zk = Pxk_zk_sumatoria
-		# inversa = inv(Pzk_zk)
-		# print(inversa)
-
-	def obtener_puntos_sigma(self, X0, Px):
-		"""
-		Calcular los puntos sigma dada una matriz X y una matriz de covarianza.
+		Actualizar la matriz X.
 
 		Parámetros:
-		X0 (list): Estado en el tiempo t
-		Px (list): Vector de covarianzas
-
-		Regresa:
-		Media de los puntos sigma
+		`vector_x`: Arreglo de tamaño n x 1
 		"""
-		matriz_sigmas = copy.deepcopy(X0)
-		for index, x in enumerate(X0[0]):
-			_sigma = Px[index][index]
-			punto_sigma = x + math.sqrt(_sigma)
-			if(index%2 == 0):
-				# X
-				try:
-					matriz_sigmas.append([punto_sigma, X0[0][index+1]])
-				except Exception as e:
-					print(e)
-					pass
-			else:
-				# Y
-				try:
-					matriz_sigmas.append([X0[0][index-1], punto_sigma])
-				except Exception as e:
-					print(e)
-					pass
-
-		for index, x in enumerate(X0[0]):
-			_sigma = Px[index][index]
-			punto_sigma = x - math.sqrt(_sigma)
-			if(index%2 == 0):
-				# X
-				try:
-					matriz_sigmas.append([punto_sigma, X0[0][index+1]])
-				except Exception as e:
-					print(e)
-					pass
-			else:
-				# Y
-				try:
-					matriz_sigmas.append([X0[0][index-1], punto_sigma])
-				except Exception as e:
-					print(e)
-					pass
+		self.x = np.matrix(vector_x)
+	
+	def set_fx(self, matriz):
+		"""
+		Actualizar la matriz de F(x)
 		
+		Parámetros:
+		`matriz`: Arreglo de tamaño n x 1
 		"""
-		Una vez que se obtienen los puntos sigma, se procede
-		a calcular S(x), donde S(x) =
-		[ atan(x/y) ]  -------------> Ángulo
-		[ raiz(X^2 + Y^2) ] --------> Distancia
+		self.fx = np.matrix(matriz)
+	
+	def set_hx(self, matriz):
 		"""
-		angulos_s = []
-		distancias_s = []
-
-		for index, punto_sigma in enumerate(matriz_sigmas):
-			_x = punto_sigma[0]
-			_y = punto_sigma[1]
-			angulo = math.degrees(math.atan(_x/_y))
-			angulos_s.append(angulo)
-			distancia = math.sqrt((math.pow(_x, 2) + math.pow(_y, 2)))
-			distancias_s.append(distancia)
+		Actualizar la matriz de H(x)
 		
+		Parámetros:
+		`matriz`: Arreglo de tamaño m x 1
 		"""
-		Finalmente se calcula la media del vector S(x)
+		self.hx = np.matrix(matriz)
+	
+	def set_p(self, matriz):
 		"""
-		_media_angulos = 0
-		_media_distancias = 0
-
-		for angulo in angulos_s:
-			_media_angulos += angulo
-		_media_angulos = _media_angulos/len(angulos_s)
-
-		for distancia in distancias_s:
-			_media_distancias += distancia
-		_media_distancias = _media_distancias/len(distancias_s)
-		return [_media_angulos, _media_distancias]
+		Actualizar la matriz de covarianzas
 		
+		Parámetros:
+		`matriz`: Arreglo de tamaño n x n
+		"""
+		self.P = np.matrix(matriz)
+	
+	def set_q(self, matriz):
+		"""
+		Establecer el arreglo Q (ruido)
+		
+		Parámetros:
+		`matriz`: Arreglo de tamaño n x n
+		"""
+		self.Q = np.matrix(matriz)
+	
+	def set_r(self, matriz):
+		"""
+		Establecer el arreglo R (ruido)
+		
+		Parámetros:
+		`matriz`: Arreglo de tamaño m x m
+		"""
+		self.R = np.matrix(matriz)
+	
+	def puntos_sigma(self):
+		"""
+		Realizar la transformada y obtener los puntos sigma
+		"""
+		puntos = []
+		self.pesos_x = []  # Pesos para cada punto sigma del estado
+		self.pesos_p = []  # Pesos para cada punto sigma de la covarianza
+		L = self.x.shape[0]
+		lam = (self.alpha**2)*(L+self.kappa) - L
+		points.append(self.x)
+		add_val = scipy_alg.sqrtm((L + lam) * self.P)
+		for i in range(add_val.shape[1]):
+			add_val_mat = np.zeros(self.P.shape[0])
+			for j in range(add_val.shape[0]):
+				add_val_mat[j] = add_val[j][i]
+			add_val_mat = np.matrix(add_val_mat).T
+			points.append(self.x + add_val_mat)
+		for i in range(add_val.shape[1]):
+			add_val_mat = np.zeros(self.P.shape[0])
+			for j in range(add_val.shape[0]):
+				add_val_mat[j] = add_val[j][i]
+			add_val_mat = np.matrix(add_val_mat).T
+			points.append(self.x - add_val_mat)
+		self.weights_x.append(lam/(L+lam))
+		self.weights_P.append((lam/(L+lam)) + (1-self.alpha**2+self.beta))
+		for i in range(2*L):
+			self.weights_x.append(1/(2*(L+lam)))
+			self.weights_P.append(1/(2*(L+lam)))
+		self.xs = points
+	
+	def actualizar_sigmas(self, funcion):
+		self.puntos_sigma()
+		self.Xs = []
+		self.Zs = []
