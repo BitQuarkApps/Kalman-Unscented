@@ -88,14 +88,60 @@ class KalmanUnscented:
 				add_val_mat[j] = add_val[j][i]
 			add_val_mat = np.matrix(add_val_mat).T
 			points.append(self.x - add_val_mat)
-		self.weights_x.append(lam/(L+lam))
-		self.weights_P.append((lam/(L+lam)) + (1-self.alpha**2+self.beta))
+		self.pesos_x.append(lam/(L+lam))
+		self.pesos_p.append((lam/(L+lam)) + (1-self.alpha**2+self.beta))
 		for i in range(2*L):
-			self.weights_x.append(1/(2*(L+lam)))
-			self.weights_P.append(1/(2*(L+lam)))
+			self.pesos_x.append(1/(2*(L+lam)))
+			self.pesos_p.append(1/(2*(L+lam)))
 		self.xs = points
 	
-	def actualizar_sigmas(self, funcion):
+	def actualizar_sigmas(self, funcion, *args):
 		self.puntos_sigma()
-		self.Xs = []
-		self.Zs = []
+		self.Xs = [] # Xk|k-1
+		self.Zs = [] # Yk
+		for self.i in range(len(self.xs)):
+			Xs_tem, Zs_tem = funcion(*args) # Pasamos el estado y la observación en la función no lineal
+			self.Xs.append(np.matrix(Xs_tem))
+			self.Zs.append(np.matrix(Zs_tem))
+
+	def prediccion(self):
+		"""
+		Etapa de predicción
+		"""
+		self.xp = 0
+		self.zp = 0  # Zk
+		for i in range(len(self.pesos_x)):
+			self.xp += self.pesos_x[i] * self.Xs[i] # K^k|k-1 = SUMATORIA ( Ws[i] * Xk|k[i] )
+			self.zp += self.pesos_x[i] * self.Zs[i]
+		self.Pp = 0
+		for i in range(len(self.pesos_p)):
+			self.Pp += self.pesos_p[i] * (self.Xs[i]-self.xp)*(self.Xs[i]-self.xp).T
+		self.Pp += self.Q
+
+	def actualizacion(self):
+		"""
+		Etapa de actualización
+		"""
+		self.Pyy = 0
+		self.Pxy = 0
+		for i in range(len(self.weights_P)):
+			self.Pyy += self.weights_P[i] * (self.Zs[i]-self.zp)*(self.Zs[i]-self.zp).T
+			self.Pxy += self.weights_P[i] * (self.Xs[i]-self.xp)*(self.Zs[i]-self.zp).T
+		self.Pyy += self.R
+		self.G = self.Pxy*np.linalg.pinv(self.Pyy)  # Ganancia
+		self.x = self.xp + self.G*(self.z - self.zp)
+		self.P = self.Pp - self.G*self.Pyy*self.G.T
+
+	def iteracion(self, z, funcion_actualizacion, *args):
+		"""
+		Realizar una iteración => {
+			1.- Cálculo de los puntos sigma.
+			2.- Predicción.
+			3.- Actualización.
+		}
+		"""
+		self.actualizar_sigmas(funcion_actualizacion, *args)
+		self.z = np.matrix(z)
+		self.prediccion()
+		self.actualizacion()
+		return 0
