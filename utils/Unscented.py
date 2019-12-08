@@ -3,6 +3,11 @@ import numpy as np
 
 
 class KalmanUnscented:
+	"""
+	Algoritmo de Kalman Unscented.
+	Las ecuaciones fueron obtenidas del siguiente Documento:
+	[ http://bibing.us.es/proyectos/abreproy/60353/fichero/Diseño+y+simulación+en+Matlab+de+los+algoritmos+EKF+y+UKF+aplicados+a+la+trayectoria+de+una+aeronave+equipada+con+un+sist~1.pdf ]
+	"""
 	def __init__(self):
 		self.Xs = None # 2L+1 puntos sigma para fx
 		self.Zs = None # 2L+1 puntos sigma para hx

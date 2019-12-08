@@ -3,44 +3,31 @@
 # Corte 3
 # Universidad Politécnica de Chiapas
 # Creado por Luis Fernando Hernández Morales y David Pérez Sánchez
-from utils.Unscented import Unscented
+from utils.Unscented import KalmanUnscented
 import matplotlib.pyplot as plt
 import numpy as np
 
-if __name__ == '__main__':
-	X0 = np.array( [ 3, 5 ] )
-	Px = np.array( [
-		[ 0.2, 0 ],
-		[ 0, 0.1 ]
-	])
-	kf = Unscented(len(X0))
+def dinamica():
+	"""
+	Calcular la función de transición del estado ƒ(x),
+	al mismo la función de observación h(x).
+	
+	Es importante definir la función de transición y de observación.
+	`Una de ellas puede ser lineal y la otra no lineal.`
+	Parámetros:
+	No requiere de parámetros.
+	"""
+	fx = None
+	hx = None
+	return fx, hx
 
-	REAL_X = []
-	REAL_Y = []
-	PREDICHA_X = []
-	PREDICHA_Y = []
-	FILTRADA_X = []
-	FILTRADA_Y = []
+angulo_lanzamiento = 50  # grados
+velocidad_incial = 5  # m/s
+"""
+Cuando la velocidad del objeto llega a 0, quiere decir que se encuentra en su altura máxima.
 
-	REAL_X.append(X0[0])
-	REAL_Y.append(X0[1])
+Después de eso, las velocidades en el eje y del objeto tienden a reducir.
 
-	for i in range(3):  # 10 iteraciones
-		#  Dinámica => Xt = i + Xt^2
-		X0 = i + np.power(X0, 2)
-		kf.puntos_sigma(X0, Px)
-	# 	filtrada, predicha = kf.prediccion()
-	# 	kf.actualizacion()
+[ Descomposición de la velocidad en sus dos componentes ]
 
-	# 	REAL_X.append(X0[0])
-	# 	REAL_Y.append(X0[1])
-	# 	PREDICHA_X.append(predicha[0])
-	# 	PREDICHA_Y.append(predicha[1])
-	# 	FILTRADA_X.append(filtrada[0])
-	# 	FILTRADA_Y.append(filtrada[1])
-	# # plt.plot(REAL_X, REAL_Y, "-", label="Real")
-	# plt.plot(PREDICHA_X, PREDICHA_Y, ":", label="Estimada", )
-	# plt.plot(FILTRADA_X, FILTRADA_Y, "r--", label="Filtrada")
-	# plt.title('Filtro de Kalman Unscented')
-	# plt.legend()
-	# plt.show()
+"""
