@@ -7,22 +7,23 @@ definidas por las variables de abajo.
 ```python
 angulo_lanzamiento = 50  # grados
 velocidad_incial = 5  # m/s
+gravedad = 9.81 # m/s
 ```
 
 > Un sensor observa el movimiento de la pelota y grafica su trayectoria con base en sus observaciones.
 
-##### Ecuaciones del movimiento parabólico
+<!-- ##### Ecuaciones del movimiento parabólico
 Cada observación se realiza en un instante de tiempo, por ende, en cada instante se puede descomponer la velocidad en sus dos componentes, **X**,**Y**.
 
 <p align="center">
   <img width="410" height="200" draggable="false" src="https://i.ibb.co/GMdC0xR/Captura-de-Pantalla-2019-12-07-a-la-s-16-20-58.png">
 </p>
 
-<!-- ![Ver imagen de trigonometría](https://i.ibb.co/GMdC0xR/Captura-de-Pantalla-2019-12-07-a-la-s-16-20-58.png) -->
+
 
 Basándonos sobre la [imagen](https://ibb.co/pK14x0d), se obtienen las siguientes fórmulas:
 
-<!-- h<sub>&theta;</sub>(x) = &theta;<sub>o</sub> x + &theta;<sub>1</sub>x -->
+
 
 1. Obtener el eje X:
 	* H * cos &alpha; = A
@@ -61,11 +62,28 @@ Reemplazando __V<sub>0y</sub>__ en la ecuación _5_:
 
 > V<sub>ƒy</sub> = ( V<sub>0</sub> sin &alpha; ) + gt
 
-### TL;DR
+Para calcular el tiempo de subida:
 
-Para obtener los componentes __x__,__y__ de cada velocidad __V<sub>i</sub>__ se aplican las siguientes fórmulas:
+> t<sub>s</sub> = ( V<sub>0</sub> sin &alpha; ) / g
+
+Para calcular la distancia máxima que recorrerá la pelota usamos la siguiente ecuación:
+
+> X<sub>max</sub> = ( V<sub>0</sub>^2 sin 2&alpha;) / g
+ -->
+### Dinámica
+
+La dinámica del movimiento de las pelotas se realizará con las siguientes ecuaciones:
 
 > x = ( V<sub>0</sub> cos &alpha; ) * t
 
 > y = ( V<sub>0</sub> sin &alpha; ) * t + 1/2 * g * t^2 
 
+<!-- > V<sub>ƒy</sub> = ( V<sub>0</sub> sin &alpha; ) + gt -->
+
+### Observación
+
+El sensor usará las siguientes ecuaciones para obtener la velocidad de la pelota en movimiento.
+
+> V<sub>x</sub> = v<sub>0</sub> cos &theta;<sub>0</sub>
+
+> V<sub>y</sub> = v<sub>0</sub> sin &theta;<sub>0</sub> - g * t

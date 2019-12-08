@@ -21,13 +21,54 @@ def dinamica():
 	hx = None
 	return fx, hx
 
+
+"""
+Establecer las variables iniciales
+"""
 angulo_lanzamiento = 50  # grados
-velocidad_incial = 5  # m/s
+velocidad_incial = 5  # m/s => V0
+x_inicial = 0
+y_inicial = 10
+ruido_R = 0.0003
+iteraciones = 50
+
+estado = [
+	[x_inicial], # x
+	[y_inicial], # y
+	[0], # vx
+	[0], # vy
+] # nx1
+
+P = [
+	[0.1, 0, 0, 0],
+	[0, 0.1, 0, 0],
+	[0, 0, 0.1, 0],
+	[0, 0, 0, 0.1]
+] # nx1
+
+Q = [
+	[0.0001, 0, 0, 0],
+	[0, 0.0001, 0, 0],
+	[0, 0, 0.0001, 0],
+	[0, 0, 0, 0.0001]
+] # nx1
+
+R = [
+	[np.random.normal(0, ruido_R), 0, 0, 0, 0],
+	[0, np.random.normal(0, ruido_R), 0, 0, 0],
+	[0, 0, np.random.normal(0, ruido_R), 0, 0],
+	[0, 0, 0, np.random.normal(0, ruido_R), 0],
+	[0, 0, 0, 0, np.random.normal(0, ruido_R)]
+] #mxm => (n+1)(n+1)
+
 """
-Cuando la velocidad del objeto llega a 0, quiere decir que se encuentra en su altura máxima.
-
-Después de eso, las velocidades en el eje y del objeto tienden a reducir.
-
-[ Descomposición de la velocidad en sus dos componentes ]
-
+Inicializar la clase del algoritmo de kalman unscented
 """
+ukf = KalmanUnscented()
+ukf.set_x(estado)
+ukf.set_p(P)
+ukf.set_q(Q)
+ukf.set_r(R)
+
+# Instantes de tiempo
+tiempo = np.arange(0, iteraciones, 1) # Arreglo de 0 hasta iteraciones en saltos de 1
