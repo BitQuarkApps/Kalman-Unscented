@@ -11,7 +11,7 @@ class KalmanUnscented:
 	def __init__(self):
 		self.Xs = None # 2L+1 puntos sigma para fx
 		self.Zs = None # 2L+1 puntos sigma para hx
-		self.alfa = 10e-3
+		self.alpha = 10e-3
 		self.beta = 2
 		self.kappa = 0
 	
@@ -79,33 +79,33 @@ class KalmanUnscented:
 		self.pesos_p = []  # Pesos para cada punto sigma de la covarianza
 		L = self.x.shape[0]
 		lam = (self.alpha**2)*(L+self.kappa) - L
-		points.append(self.x)
+		puntos.append(self.x)
 		add_val = scipy_alg.sqrtm((L + lam) * self.P)
 		for i in range(add_val.shape[1]):
 			add_val_mat = np.zeros(self.P.shape[0])
 			for j in range(add_val.shape[0]):
 				add_val_mat[j] = add_val[j][i]
 			add_val_mat = np.matrix(add_val_mat).T
-			points.append(self.x + add_val_mat)
+			puntos.append(self.x + add_val_mat)
 		for i in range(add_val.shape[1]):
 			add_val_mat = np.zeros(self.P.shape[0])
 			for j in range(add_val.shape[0]):
 				add_val_mat[j] = add_val[j][i]
 			add_val_mat = np.matrix(add_val_mat).T
-			points.append(self.x - add_val_mat)
+			puntos.append(self.x - add_val_mat)
 		self.pesos_x.append(lam/(L+lam))
 		self.pesos_p.append((lam/(L+lam)) + (1-self.alpha**2+self.beta))
 		for i in range(2*L):
 			self.pesos_x.append(1/(2*(L+lam)))
 			self.pesos_p.append(1/(2*(L+lam)))
-		self.xs = points
+		self.xs = puntos
 	
-	def actualizar_sigmas(self, funcion, *args):
+	def actualizar_sigmas(self, funcion):
 		self.puntos_sigma()
 		self.Xs = [] # Xk|k-1
 		self.Zs = [] # Yk
 		for self.i in range(len(self.xs)):
-			Xs_tem, Zs_tem = funcion(*args) # Pasamos el estado y la observación en la función no lineal
+			Xs_tem, Zs_tem = funcion() # Pasamos el estado y la observación en la función no lineal
 			self.Xs.append(np.matrix(Xs_tem))
 			self.Zs.append(np.matrix(Zs_tem))
 
@@ -129,9 +129,9 @@ class KalmanUnscented:
 		"""
 		self.Pyy = 0
 		self.Pxy = 0
-		for i in range(len(self.weights_P)):
-			self.Pyy += self.weights_P[i] * (self.Zs[i]-self.zp)*(self.Zs[i]-self.zp).T
-			self.Pxy += self.weights_P[i] * (self.Xs[i]-self.xp)*(self.Zs[i]-self.zp).T
+		for i in range(len(self.pesos_p)):
+			self.Pyy += self.pesos_p[i] * (self.Zs[i]-self.zp)*(self.Zs[i]-self.zp).T
+			self.Pxy += self.pesos_p[i] * (self.Xs[i]-self.xp)*(self.Zs[i]-self.zp).T
 		self.Pyy += self.R
 		self.G = self.Pxy*np.linalg.pinv(self.Pyy)  # Ganancia
 		self.x = self.xp + self.G*(self.z - self.zp)
@@ -151,11 +151,17 @@ class KalmanUnscented:
 		self.actualizacion()
 		return 0
 
-	def get_estado(self):
+	def get_filtrada(self):
 		"""
 		Obtener la filtrada del estado
 		"""
 		return self.x
+
+	def get_prediccion(self):
+		"""
+		Obtener la predicción
+		"""
+		return self.xp
 
 	def get_matriz_covarianza(self):
 		"""
