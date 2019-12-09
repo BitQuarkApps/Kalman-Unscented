@@ -150,3 +150,21 @@ class KalmanUnscented:
 		self.prediccion()
 		self.actualizacion()
 		return 0
+
+	def get_estado(self):
+		"""
+		Obtener la filtrada del estado
+		"""
+		return self.x
+
+	def get_matriz_covarianza(self):
+		"""
+		Obtener la matriz de covarianza Px
+		"""
+		return self.P
+
+	def get_Ganancia(self):
+		"""
+		Obtener la ganacia de Kalman
+		"""
+		return self.G
