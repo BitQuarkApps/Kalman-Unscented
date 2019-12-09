@@ -100,12 +100,12 @@ class KalmanUnscented:
 			self.pesos_p.append(1/(2*(L+lam)))
 		self.xs = puntos
 	
-	def actualizar_sigmas(self, funcion):
+	def actualizar_sigmas(self, funcion, *args):
 		self.puntos_sigma()
 		self.Xs = [] # Xk|k-1
 		self.Zs = [] # Yk
 		for self.i in range(len(self.xs)):
-			Xs_tem, Zs_tem = funcion() # Pasamos el estado y la observación en la función no lineal
+			Xs_tem, Zs_tem = funcion(*args) # Pasamos el estado y la observación en la función no lineal
 			self.Xs.append(np.matrix(Xs_tem))
 			self.Zs.append(np.matrix(Zs_tem))
 

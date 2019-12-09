@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import math
 
-def dinamica():
+def dinamica(t):
 	"""
 	Calcular la función de transición del estado ƒ(x),
 	al mismo la función de observación h(x).
@@ -18,15 +18,25 @@ def dinamica():
 	Parámetros:
 	No requiere de parámetros.
 	"""
+	# fx = [
+	# 	[ukf.xs[ukf.i][0,0]],
+	# 	[ukf.xs[ukf.i][1,0]],
+	# 	[ukf.xs[ukf.i][2,0]],
+	# 	[ukf.xs[ukf.i][3,0]]
+	# ] # nx1
+	# hx = [
+	# 	[ukf.xs[ukf.i][0,0]],
+	# 	[ukf.xs[ukf.i][1,0]]
+	# ] # mx1 => m = Tamaño de la observación
 	fx = [
-		[ukf.xs[ukf.i][0,0]],
-		[ukf.xs[ukf.i][1,0]],
+		[ukf.xs[ukf.i][0,0] * math.cos(angulo_lanzamiento) * t],
+		[ukf.xs[ukf.i][1,0] * math.sin(angulo_lanzamiento) * tiempo[i] + ( 1/2 * gravedad * math.pow(tiempo[i], 2) )],
 		[ukf.xs[ukf.i][2,0]],
 		[ukf.xs[ukf.i][3,0]]
 	] # nx1
 	hx = [
-		[ukf.xs[ukf.i][0,0]],
-		[ukf.xs[ukf.i][1,0]]
+		[ukf.xs[ukf.i][0,0] * math.cos(angulo_lanzamiento)],
+		[ukf.xs[ukf.i][1,0] * math.sin(angulo_lanzamiento) - gravedad * t]
 	] # mx1 => m = Tamaño de la observación
 	return fx, hx
 
@@ -46,7 +56,7 @@ estado = [
 	[x_inicial], # x
 	[y_inicial], # y
 	[0], # vx
-	[0], # vy
+	[velocidad_incial], # vy
 ] # nx1
 
 P = [
@@ -87,7 +97,6 @@ PREDICHA_Y = []
 
 # Instantes de tiempo
 tiempo = np.arange(1, iteraciones, 1) # Arreglo de 1 hasta iteraciones en saltos de 1
-tiempo_anterior = 0
 """
 Dinámica del problema
 """
@@ -98,9 +107,6 @@ Dinámica del problema
 # PROCESO_REAL_Y.append(y + ruido_dinamica)
 
 for i in range(len(tiempo)):
-	delta_t = float(tiempo[i]-tiempo_anterior)
-	tiempo_anterior = float(tiempo[i])
-
 	# Proceso real
 	x_ = ( velocidad_incial * math.cos(angulo_lanzamiento) ) * tiempo[i] # x = ( V0 cos α ) * t
 	y_ = ( velocidad_incial * math.sin(angulo_lanzamiento) * tiempo[i] ) + ( 1/2 * gravedad * math.pow(tiempo[i], 2) ) # y = ( V0 sin α ) * t + 1/2 * g * t^2
@@ -113,10 +119,10 @@ for i in range(len(tiempo)):
 	"""
 	Z = [
 			[ velocidad_incial * math.cos(angulo_lanzamiento) ], #Vx = v0 cos θ0
-			[ velocidad_incial * math.sin(angulo_lanzamiento) - gravedad * delta_t ], #Vy = v0 sin θ0 - g * t
+			[ velocidad_incial * math.sin(angulo_lanzamiento) - gravedad * tiempo[i] ], #Vy = v0 sin θ0 - g * t
 		]
 
-	ukf.iteracion(Z, dinamica)
+	ukf.iteracion(Z, dinamica, tiempo[i])
 	_filtrada = ukf.get_filtrada()
 	_predicha = ukf.get_prediccion()
 	FILTRADA_X.append(_filtrada[0,0])
