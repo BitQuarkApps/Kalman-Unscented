@@ -1,5 +1,7 @@
 # Algoritmo de Kalman Unscented
 
+<center>
+
 Cuatrimestre | Septiembre - Diciembre de 2019
 :------------: | :-------------:
 Cuatrimestre y grupo | 10° "A"
@@ -11,6 +13,8 @@ Fecha de entrega | 2019.12.10
 Matrícula | Nombre
 163189 | HERNÁNDEZ MORALES Luis Fernando
 163202 | PÉREZ SÁNCHEZ David
+
+</center>
 
 ---
 
