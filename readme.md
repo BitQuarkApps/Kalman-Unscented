@@ -1,5 +1,17 @@
 # Diseño de sistemas inteligentes - 10º A
 
+Cuatrimestre | Septiembre - Diciembre de 2019
+:------------: | :-------------:
+Cuatrimestre y grupo | 10A
+Asignatura | Diseño de Sistemas Inteligentes
+Corte | 3
+Actividad | DSI.C3.A1
+Fecha de asignación | 2019.12.09
+Fecha de entrega | 2019.12.10
+Matrícula | Nombre
+163189 | HERNÁNDEZ MORALES Luis Fernando
+163202 | PÉREZ SÁNCHEZ David
+
 <p align="center">
 	<img src="https://i.ibb.co/PtV87CY/descripcion-problema.png" alt="Descripción del problema" width="400" height="250">
 </p>
