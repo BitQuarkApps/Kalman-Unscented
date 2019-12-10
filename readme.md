@@ -42,7 +42,7 @@ El algoritomo hace los cálculos pertinentes mediante matrices, una de ellas es 
 	<img src="https://firebasestorage.googleapis.com/v0/b/mechanicapp-project.appspot.com/o/filtro_kalman_unscented%2Festados.gif?alt=media&token=271873ed-2921-471b-a05c-7e8689b9b521" alt="Matriz de estado Fx" title="Matriz de estado Fx">
 </p>
 
-La ecuación anterior nos dice que durante un período de tiempo corto la posición cambia en **Δt** veces la velocidad (en ambas direcciones x e y) y que la velocidad permanece constante (en ambas direcciones x e y). Fx es la matriz jacobiana requerida.
+La ecuación anterior nos dice que durante un período de tiempo corto la posición cambia en **Δt** veces la velocidad (en ambas direcciones x e y) y que la velocidad permanece constante (en ambas direcciones x e y).
 
 La ecuación de actualización de la medición es un poco más compleja: depende de la diferenciación de una identidad trigonométrica. La distancia y el angulo están relacionados con los desplazamientos "x" e "y" de las ecuaciones,
 

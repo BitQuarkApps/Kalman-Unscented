@@ -10,10 +10,10 @@ import math
 
 def preparar_algoritmo():
 	# Matriz del estado
-	ukf.setX([[-2900],
-			  [80],
-			  [950],
-			  [20]])
+	ukf.setX([[-1000],
+			  [100],
+			  [1000],
+			  [0]])
 
 	# Matriz de covarianzas
 	ukf.setP([[100,0,0,0],
@@ -49,7 +49,7 @@ preparar_algoritmo()
 
 time = np.arange(0, 60, 0.1)
 # time = np.arange(0, 60, 1)
-x = np.linspace(-3000,3000,len(time))
+x = np.linspace(-1000,1000,len(time))
 # x = np.linspace(0,300,len(time))
 y = np.linspace(1000,800,len(time))
 xv = np.gradient(x,time)
