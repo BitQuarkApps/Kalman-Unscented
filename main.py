@@ -47,13 +47,16 @@ def funciones_fx_hx(t):
 ukf = ukf()
 preparar_algoritmo()
 
-time = np.arange(0, 60, 0.1)
+time = np.arange(0, 60, 1)
 # time = np.arange(0, 60, 1)
 x = np.linspace(-1000,1000,len(time))
 # x = np.linspace(0,300,len(time))
 y = np.linspace(1000,800,len(time))
 xv = np.gradient(x,time)
 yv = np.gradient(y,time)
+
+# print(f'xv => {xv}')
+# print(f'yv => {yv}')
 r_raw = np.sqrt(x**2+y**2)
 theta_raw = np.arctan2(y,x)
 r_noise = np.random.normal(0,50,len(r_raw))
