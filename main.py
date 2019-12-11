@@ -14,6 +14,10 @@ def preparar_algoritmo():
 			  [velocidad_x],
 			  [punto_inicio_y],
 			  [velocidad_y]])
+	print([[punto_inicio_x],
+			  [velocidad_x],
+			  [punto_inicio_y],
+			  [velocidad_y]])
 
 	# Matriz de covarianzas
 	ukf.setP([[0.025,0,0,0],
@@ -47,8 +51,8 @@ def funciones_fx_hx(t):
 
 punto_inicio_x = 0
 punto_inicio_y = 0
-velocidad_x = 100
-velocidad_y = 10
+velocidad_x = 50
+velocidad_y = 25
 ruido_posicion = 0.0030
 ruido_velocidad = 0.0025
 _delta_t = 1
@@ -67,18 +71,17 @@ Posiciones x, y
 """
 x = np.array([punto_inicio_x], dtype=np.float64)
 y = np.array([punto_inicio_y], dtype=np.float64)
+xv = np.array([velocidad_x])
+yv = np.array([velocidad_y])
 for i in range(len(time)-1):
 	x = np.append(x, x[-1] + velocidad_x + np.random.normal(0, ruido_posicion))
 	y = np.append(y, y[-1] + velocidad_y + np.random.normal(0, ruido_posicion))
+	xv = np.append(xv, xv[-1] + np.random.normal(0, ruido_velocidad))
+	yv = np.append(yv, yv[-1] + np.random.normal(0, ruido_velocidad))
 
 # xv = np.gradient(x,time)
 # yv = np.gradient(y,time)
-xv = np.array([velocidad_x])
-yv = np.array([velocidad_y])
 
-for i in range(len(time)-1):
-	xv = np.append(xv, xv[-1] + np.random.normal(0, ruido_velocidad))
-	yv = np.append(yv, yv[-1] + np.random.normal(0, ruido_velocidad))
 
 r_raw = np.sqrt(x**2+y**2)
 theta_raw = np.arctan2(y,x)
@@ -117,7 +120,6 @@ for i in range(len(time)):
 	xv_f.append(x_filtered[1,0])
 	y_f.append(x_filtered[2,0])
 	yv_f.append(x_filtered[3,0])
-	print(f'filtrada => {x_filtered[3,0]}')
 
 x_f = np.array(x_f)
 xv_f = np.array(xv_f)
@@ -129,25 +131,21 @@ xv_p = np.array(xv_p)
 yv_p = np.array(yv_p)
 
 
-plt.subplot(411)
 plt.plot(time,x,'b',label='Real')
 plt.plot(time,x_f,'r',label='Filtrada')
 plt.plot(time,x_p,'y-',label='Predicha')
 plt.title('Posiciones en X')
-plt.xticks([])
-plt.subplot(412)
+plt.figure()
 plt.plot(time,xv,'b',label='Real')
 plt.plot(time,xv_f,'r',label='Filtrada')
 plt.plot(time,xv_p,'y-',label='Predicha')
 plt.title('Velocidades en X')
-plt.xticks([])
-plt.subplot(413)
+plt.figure()
 plt.plot(time,y,'b',label='Real')
 plt.plot(time,y_f,'r',label='Filtrada')
 plt.plot(time,y_p,'y-',label='Predicha')
 plt.title('Posiciones en Y')
-plt.xticks([])
-plt.subplot(414)
+plt.figure()
 plt.plot(time,yv,'b',label='Real')
 plt.plot(time,yv_f,'r',label='Filtrada')
 plt.plot(time,yv_p,'y-',label='Predicha')
