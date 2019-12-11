@@ -10,16 +10,16 @@ import math
 
 def preparar_algoritmo():
 	# Matriz del estado
-	ukf.setX([[-1000],
-			  [100],
-			  [1000],
-			  [0]])
+	ukf.setX([[punto_inicio_x],
+			  [velocidad_x],
+			  [punto_inicio_y],
+			  [velocidad_y]])
 
 	# Matriz de covarianzas
-	ukf.setP([[100,0,0,0],
-			  [0,100,0,0],
-			  [0,0,100,0],
-			  [0,0,0,100]])
+	ukf.setP([[0.025,0,0,0],
+			  [0,0.025,0,0],
+			  [0,0,0.025,0],
+			  [0,0,0,0.025]])
 
 	 # Ruido para la predicción
 	ukf.setQ([[0,0,0,0],
@@ -28,7 +28,7 @@ def preparar_algoritmo():
 			  [0,0,0,0.1]])
 
 	# Ruido para la actualización
-	ukf.setR([[50**2,0],
+	ukf.setR([[0.5**2,0],
 			  [0,0.005**2]])
 
 	ukf.setAlpha(0.001)
@@ -44,25 +44,57 @@ def funciones_fx_hx(t):
 		  [math.atan2(ukf.xs[ukf.i][2,0],ukf.xs[ukf.i][0,0])]]
 	return fx, hx
 
+
+punto_inicio_x = 0
+punto_inicio_y = 0
+velocidad_x = 100
+velocidad_y = 10
+ruido_posicion = 0.0030
+ruido_velocidad = 0.0025
+_delta_t = 1
+
+
 ukf = ukf()
 preparar_algoritmo()
 
-time = np.arange(0, 60, 1)
-# time = np.arange(0, 60, 1)
-x = np.linspace(-1000,1000,len(time))
-# x = np.linspace(0,300,len(time))
-y = np.linspace(1000,800,len(time))
-xv = np.gradient(x,time)
-yv = np.gradient(y,time)
+time = np.arange(0, 60, _delta_t)
+# x = np.linspace(punto_inicio_x, punto_final_x,len(time))
+# y = np.linspace(punto_inicio_y, punto_final_y,len(time))
 
-# print(f'xv => {xv}')
-# print(f'yv => {yv}')
+
+"""
+Posiciones x, y
+"""
+x = np.array([punto_inicio_x], dtype=np.float64)
+y = np.array([punto_inicio_y], dtype=np.float64)
+for i in range(len(time)-1):
+	x = np.append(x, x[-1] + velocidad_x + np.random.normal(0, ruido_posicion))
+	y = np.append(y, y[-1] + velocidad_y + np.random.normal(0, ruido_posicion))
+
+# xv = np.gradient(x,time)
+# yv = np.gradient(y,time)
+xv = np.array([velocidad_x])
+yv = np.array([velocidad_y])
+
+for i in range(len(time)-1):
+	xv = np.append(xv, xv[-1] + np.random.normal(0, ruido_velocidad))
+	yv = np.append(yv, yv[-1] + np.random.normal(0, ruido_velocidad))
+
 r_raw = np.sqrt(x**2+y**2)
 theta_raw = np.arctan2(y,x)
-r_noise = np.random.normal(0,50,len(r_raw))
+r_noise = np.random.normal(0,0.5,len(r_raw))
 theta_noise = np.random.normal(0,0.005,len(theta_raw))
 r = r_raw + r_noise
 theta = theta_raw + theta_noise
+
+
+print(f' Len x => {x.shape}')
+print(f' Len Y => {y.shape}')
+print(f' Len xv => {xv.shape}')
+print(f' Len yv => {yv.shape}')
+print(f' Len r_raw => {r_raw.shape}')
+print(f' Len theta_raw => {theta_raw.shape}')
+
 
 prev = 0
 x_f = []
