@@ -28,7 +28,7 @@ def preparar_algoritmo():
 			  [0,0,0,0.1]])
 
 	# Ruido para la actualización
-	ukf.setR([[0.5**2,0],
+	ukf.setR([[0.005**2,0],
 			  [0,0.005**2]])
 
 	ukf.setAlpha(0.001)
@@ -82,18 +82,10 @@ for i in range(len(time)-1):
 
 r_raw = np.sqrt(x**2+y**2)
 theta_raw = np.arctan2(y,x)
-r_noise = np.random.normal(0,0.5,len(r_raw))
+r_noise = np.random.normal(0,0.005,len(r_raw))
 theta_noise = np.random.normal(0,0.005,len(theta_raw))
 r = r_raw + r_noise
 theta = theta_raw + theta_noise
-
-
-print(f' Len x => {x.shape}')
-print(f' Len Y => {y.shape}')
-print(f' Len xv => {xv.shape}')
-print(f' Len yv => {yv.shape}')
-print(f' Len r_raw => {r_raw.shape}')
-print(f' Len theta_raw => {theta_raw.shape}')
 
 
 prev = 0
@@ -125,6 +117,7 @@ for i in range(len(time)):
 	xv_f.append(x_filtered[1,0])
 	y_f.append(x_filtered[2,0])
 	yv_f.append(x_filtered[3,0])
+	print(f'filtrada => {x_filtered[3,0]}')
 
 x_f = np.array(x_f)
 xv_f = np.array(xv_f)
