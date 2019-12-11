@@ -14,26 +14,22 @@ def preparar_algoritmo():
 			  [velocidad_x],
 			  [punto_inicio_y],
 			  [velocidad_y]])
-	print([[punto_inicio_x],
-			  [velocidad_x],
-			  [punto_inicio_y],
-			  [velocidad_y]])
 
 	# Matriz de covarianzas
-	ukf.setP([[0.025,0,0,0],
-			  [0,0.025,0,0],
-			  [0,0,0.025,0],
-			  [0,0,0,0.025]])
+	ukf.setP([[ruido_posicion,0,0,0],
+			  [0,ruido_velocidad,0,0],
+			  [0,0,ruido_posicion,0],
+			  [0,0,0,ruido_velocidad]])
 
 	 # Ruido para la predicción
-	ukf.setQ([[0,0,0,0],
-			  [0,0.1,0,0],
-			  [0,0,0,0],
-			  [0,0,0,0.1]])
+	ukf.setQ([[ruido_posicion**2,0,0,0],
+			  [0,ruido_velocidad**2,0,0],
+			  [0,0,ruido_posicion**2,0],
+			  [0,0,0,ruido_velocidad**2]])
 
 	# Ruido para la actualización
-	ukf.setR([[0.005**2,0],
-			  [0,0.005**2]])
+	ukf.setR([[ruido_posicion**2,0],
+			  [0,ruido_velocidad**2]])
 
 	ukf.setAlpha(0.001)
 	ukf.setBeta(2)
@@ -51,10 +47,10 @@ def funciones_fx_hx(t):
 
 punto_inicio_x = 0
 punto_inicio_y = 0
-velocidad_x = 50
-velocidad_y = 25
-ruido_posicion = 0.0030
-ruido_velocidad = 0.0025
+velocidad_x = 25
+velocidad_y = 15
+ruido_posicion = 10/3 # 10 metros de error
+ruido_velocidad = 0.5/3 # 0.5 mts/s de error
 _delta_t = 1
 
 
@@ -130,31 +126,28 @@ y_p = np.array(y_p)
 xv_p = np.array(xv_p)
 yv_p = np.array(yv_p)
 
-
-plt.plot(time,x,'b',label='Real')
-plt.plot(time,x_f,'r',label='Filtrada')
-plt.plot(time,x_p,'y-',label='Predicha')
-plt.title('Posiciones en X')
 plt.figure()
-plt.plot(time,xv,'b',label='Real')
-plt.plot(time,xv_f,'r',label='Filtrada')
-plt.plot(time,xv_p,'y-',label='Predicha')
-plt.title('Velocidades en X')
-plt.figure()
-plt.plot(time,y,'b',label='Real')
-plt.plot(time,y_f,'r',label='Filtrada')
-plt.plot(time,y_p,'y-',label='Predicha')
-plt.title('Posiciones en Y')
-plt.figure()
-plt.plot(time,yv,'b',label='Real')
-plt.plot(time,yv_f,'r',label='Filtrada')
-plt.plot(time,yv_p,'y-',label='Predicha')
-plt.title('Velocidades en Y')
-plt.legend()
+# plt.plot(time,xv,'b',label='Real')
+# plt.plot(time,xv_f,'r',label='Filtrada')
+# plt.plot(time,xv_p,'y-',label='Predicha')
+# plt.grid()
+plt.plot(xv,yv,'b',label='Real')
+plt.plot(xv_f,yv_f,'r',label='Filtrada')
+plt.plot(xv_p,yv_p,'y-',label='Predicha')
+plt.grid()
+plt.title('Velocidades observadas')
+# plt.figure()
+# plt.plot(time,yv,'b',label='Real')
+# plt.plot(time,yv_f,'r',label='Filtrada')
+# plt.plot(time,yv_p,'y-',label='Predicha')
+# plt.grid()
+# plt.title('Velocidades en Y')
+# plt.legend()
 plt.figure()
 plt.plot(x,y,'b',label='Real')
 plt.plot(x_f,y_f,'r',label='Filtrada')
 plt.plot(x_p,y_p,'y--',label='Predicha')
+plt.grid()
 plt.title('Trayectoria del avión')
 plt.legend()
 plt.show()
