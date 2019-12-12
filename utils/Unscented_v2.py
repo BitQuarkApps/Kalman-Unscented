@@ -23,14 +23,14 @@ class Unscented:
 		raiz = scipy_alg.sqrtm(self.P)
 		for i in range(raiz.shape[1]):
 			suma_matriz = np.zeros(self.P.shape[0])
-			for j in range(suma_matriz.shape[0]):
+			for j in range(raiz.shape[0]):
 				suma_matriz[j] = raiz[j][i]
 			suma_matriz = np.matrix(suma_matriz).T
 			puntos.append(self.x + suma_matriz)
 
 		for i in range(raiz.shape[1]):
 			suma_matriz = np.zeros(self.P.shape[0])
-			for j in range(suma_matriz.shape[0]):
+			for j in range(raiz.shape[0]):
 				suma_matriz[j] = raiz[j][i]
 			suma_matriz = np.matrix(suma_matriz).T
 			puntos.append(self.x - suma_matriz)
