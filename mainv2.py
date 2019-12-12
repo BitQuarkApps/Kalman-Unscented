@@ -11,10 +11,10 @@ import copy
 
 
 delta_t = 1
-posicion_x = 0
-posicion_y = 0
+posicion_x = -1000
+posicion_y = 1000
 velocidad_x = 25
-velocidad_y = 5
+velocidad_y = 0
 iteraciones = 30
 ruido_posicion = 10/3
 ruido_velocidad = 0.5/3
@@ -130,19 +130,33 @@ for i in range(len(time)):
 plt.plot(real_x, real_y, label="Real")
 plt.plot(x_p, y_p, label="Predicha", linestyle=":")
 plt.plot(x_f, y_f, label="Filtrada", linestyle="--")
-plt.title('Posición del objeto')
+plt.grid()
+plt.xlabel("Posición X")
+plt.ylabel("Posición Y")
+plt.title('Posición del objeto X e Y')
 plt.legend()
 plt.figure()
-plt.plot(time, velocidad_real_x, label="Real")
-plt.plot(time, xv_p, label="Predicha", linestyle=":")
-plt.plot(time, xv_f, label="Filtrada", linestyle="--")
-plt.title('Velocidad en X del objeto')
+
+plt.subplot(111, projection='polar')
+plt.plot(theta, r, label="Trayectoria")
+plt.grid(True)
+plt.title("Vista del radar - Trayectoria del avión")
 plt.legend()
-plt.figure()
-plt.plot(time, velocidad_real_y, label="Real")
-plt.plot(time, yv_p, label="Predicha", linestyle=":")
-plt.plot(time, yv_f, label="Filtrada", linestyle="--")
-plt.title('Velocidad en Y del objeto')
-plt.legend()
+# plt.figure()
+
+# plt.plot(time, velocidad_real_x, label="Real")
+# plt.plot(time, xv_p, label="Predicha", linestyle=":")
+# plt.plot(time, xv_f, label="Filtrada", linestyle="--")
+# plt.grid()
+# plt.title('Velocidad en X del objeto')
+# plt.legend()
+# plt.figure()
+
+# plt.plot(time, velocidad_real_y, label="Real")
+# plt.plot(time, yv_p, label="Predicha", linestyle=":")
+# plt.plot(time, yv_f, label="Filtrada", linestyle="--")
+# plt.grid()
+# plt.title('Velocidad en Y del objeto')
+# plt.legend()
 plt.show()
 # ------------- F I N  G R A F I C A R --------------
