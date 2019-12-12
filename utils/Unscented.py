@@ -9,6 +9,9 @@ class model:
 	def __init__(self):
 		self.Xs = None      # 2L+1 sigma points for fx
 		self.Zs = None      # 2L+1 sigma points for hx
+		self.alpha = 0.001
+		self.beta = 2
+		self.kappa = 0
 	
 	def setX(self, mat):    # n x 1
 		self.x = np.matrix(mat)
@@ -50,6 +53,7 @@ class ukf(model):
 		lam = (self.alpha**2)*(L+self.kappa) - L
 		points.append(self.x)
 		add_val = scipy_alg.sqrtm((L + lam) * self.P)
+		# add_val = scipy_alg.sqrtm(1 * self.P)
 		for i in range(add_val.shape[1]):
 			add_val_mat = np.zeros(self.P.shape[0])
 			for j in range(add_val.shape[0]):
@@ -68,6 +72,7 @@ class ukf(model):
 			self.weights_x.append(1/(2*(L+lam)))
 			self.weights_P.append(1/(2*(L+lam)))
 		self.xs = points
+		print(f'Puntos sigma => {len(self.xs)}\n')
 
 	def update_sigma(self, func, *args):
 		self.sigma()
