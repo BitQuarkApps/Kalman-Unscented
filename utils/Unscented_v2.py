@@ -50,6 +50,7 @@ class Unscented:
 			zs_hx = self.hx()
 			self.Xs.append(np.matrix( xs_fx ))
 			self.Zs.append(np.matrix( zs_hx ))
+		print(f'hx => ( {self.Zs[0].shape[0]}, {len(self.Zs)})')
 
 	def prediccion(self):
 		self.xp = 0

@@ -11,7 +11,7 @@ import copy
 
 
 delta_t = 1
-posicion_x = -1000
+posicion_x = -100
 posicion_y = 1000
 velocidad_x = 25
 velocidad_y = 0
@@ -20,6 +20,12 @@ ruido_posicion = 10/3
 ruido_velocidad = 0.5/3
 ruido_medicion_distancia = 0.005
 ruido_medicion_angulo = 0.005
+
+posicion_x_radar = -20 #h
+posicion_y_radar = 1 #k
+
+delta_x = []
+delta_y = []
 
 time = np.arange(0, iteraciones, delta_t)
 
@@ -56,6 +62,10 @@ yv_f = [] # VY filtrada
 
 real_x.append(posicion_x)
 real_y.append(posicion_y)
+
+delta_x.append(posicion_x-posicion_x_radar)
+delta_y.append(posicion_y-posicion_y_radar)
+
 velocidad_real_x.append(velocidad_x)
 velocidad_real_y.append(velocidad_y)
 
@@ -72,16 +82,22 @@ for i in range(len(time)-1):
 	real_x.append(f_Xt[0,0])
 	real_y.append(f_Xt[2,0])
 
+	delta_x.append(f_Xt[0,0]-posicion_x_radar)
+	delta_y.append(f_Xt[2,0]-posicion_y_radar)
+
 	velocidad_real_x.append(f_Xt[1,0])
 	velocidad_real_y.append(f_Xt[3,0])
 
 real_x = np.array(real_x)
 real_y = np.array(real_y)
+delta_x = np.array(delta_x)
+delta_y = np.array(delta_y)
+
 velocidad_real_x = np.array(velocidad_real_x)
 velocidad_real_y = np.array(velocidad_real_y)
 
-r_raw = np.sqrt(real_x**2+real_y**2) # Valores de la raíz de X^2+Y^2
-theta_raw = np.arctan2(real_y,real_x) # Valores de la arcotangente y,x
+r_raw = np.sqrt(delta_x**2+delta_y**2) # Valores de la raíz de X^2+Y^2
+theta_raw = np.arctan2(delta_y,delta_x) # Valores de la arcotangente y,x
 r_noise = np.random.normal(0,ruido_medicion_distancia,len(r_raw)) # Ruido para la medición de la distancia
 theta_noise = np.random.normal(0,ruido_medicion_angulo,len(theta_raw)) # Ruido para la medición del ángulo
 r = r_raw + r_noise
