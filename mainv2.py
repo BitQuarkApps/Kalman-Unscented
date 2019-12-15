@@ -11,7 +11,7 @@ import copy
 
 
 delta_t = 1
-posicion_x = 100
+posicion_x = 0
 posicion_y = 1000
 velocidad_x = 25
 velocidad_y = 0
@@ -19,10 +19,10 @@ iteraciones = 30
 ruido_posicion = 10/3
 ruido_velocidad = 0.5/3
 ruido_medicion_distancia = 0.005
-ruido_medicion_angulo = 0.005
+ruido_medicion_angulo = 0.0005
 
-posicion_x_radar = -20 #h
-posicion_y_radar = 1 #k
+posicion_x_radar = 200 #h
+posicion_y_radar = 0 #k
 
 delta_x = []
 delta_y = []
@@ -155,6 +155,7 @@ plt.figure()
 
 plt.subplot(111, projection='polar')
 plt.plot(theta, r, label="Trayectoria")
+plt.plot(posicion_x_radar, posicion_y_radar, 'o', label="observador")
 plt.grid(True)
 plt.title("Vista del radar - Trayectoria del avión")
 plt.legend()
