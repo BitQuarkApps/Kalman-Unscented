@@ -11,7 +11,7 @@ import copy
 
 
 delta_t = 1
-posicion_x = -100
+posicion_x = 100
 posicion_y = 1000
 velocidad_x = 25
 velocidad_y = 0
@@ -123,7 +123,7 @@ R = [
 	[ ruido_medicion_distancia**2, 0 ],
 	[ 0, ruido_medicion_angulo**2 ]
 ]
-ukf = Unscented(Xt_inicial, P, Q, R)
+ukf = Unscented(Xt_inicial, P, Q, R, posicion_x_radar, posicion_y_radar)
 for i in range(len(time)):
 	z = [[r[i]], # Observaciones del sensor
 		 [theta[i]]]

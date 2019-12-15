@@ -4,7 +4,7 @@ import numpy as np
 from scipy import linalg as scipy_alg
 
 class Unscented:
-	def __init__(self, estado, covarianzas, Q, R):
+	def __init__(self, estado, covarianzas, Q, R, h, k):
 		self.Xs = None      # 2L+1 sigma points for fx
 		self.Zs = None      # 2L+1 sigma points for hx
 		self.x = np.matrix(estado)
@@ -13,6 +13,8 @@ class Unscented:
 		self.R = np.matrix(R)
 		self.predicha = None
 		self.filtrada = None
+		self.h = h
+		self.k = k
 
 	def puntos_sigmas(self):
 		puntos = []
@@ -91,8 +93,13 @@ class Unscented:
 			[ self.xs[self.i][3,0] ]
 		]
 
+	# def hx(self):
+	# 	return [
+	# 		[ math.sqrt(self.xs[self.i][0,0]**2 + self.xs[self.i][2,0]**2) ],
+	# 		[ math.atan2(self.xs[self.i][2,0],self.xs[self.i][0,0]) ]
+	# 	]
 	def hx(self):
 		return [
-			[ math.sqrt(self.xs[self.i][0,0]**2 + self.xs[self.i][2,0]**2) ],
-			[ math.atan2(self.xs[self.i][2,0],self.xs[self.i][0,0]) ]
+			[ math.sqrt( ( self.xs[self.i][0,0]-self.h)**2 + (self.xs[self.i][2,0]-self.k )**2 ) ],
+			[ math.atan2( self.xs[self.i][2,0]-self.k,self.xs[self.i][0,0]-self.h ) ]
 		]
